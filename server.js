@@ -1,10 +1,11 @@
-requestAnimationFrame('dotenv').config()
+
+require("dotenv").config({ path: "./config/.env" });
 const express = require('express')
 const mongoose = require('mongoose')
 const Book = require('./models/books')
 
 const app = express()
-const POSRT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3000
 
 mongoose.set('strictQuery', false)
 const connectDB = async () => {
@@ -17,7 +18,7 @@ const connectDB = async () => {
     }
 }
 
-app.get('/', (req, res) => {
+app.get('/', (req, res) => { // homepage
     res.send({title: 'Books'})
 })
 app.get('/add-note', async (req,res) => {
