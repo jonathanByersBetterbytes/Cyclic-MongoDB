@@ -40,8 +40,11 @@ app.get('/add-note', async (req,res) => {
 })
 app.get('/books', async (req,res)=>{
     const book = await Book.find();
-    if(book) res.json(book)
-    else res.send('Something went wrong.')
+    if(book){
+        res.json(book) // return the books in JSON
+        console.log('Got the books:')
+        console.log(res.json(book))
+    }else res.send('Something went wrong.')
 })
 
 connectDB().then(()=> {
