@@ -19,7 +19,7 @@ const connectDB = async () => {
 }
 
 app.get('/', (req, res) => { // homepage
-    res.send({title: 'Books2'})
+    res.send({title: 'Books3'})
 })
 app.get('/add-note', async (req,res) => {
     try{
