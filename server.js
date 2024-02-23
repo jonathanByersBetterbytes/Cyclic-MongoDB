@@ -21,7 +21,7 @@ mongoose.set('strictQuery', false)
 const connectDB = async () => {
     try {
         const conn = await mongoose.connect(process.env.MONGO_URI)
-        console.log(`MongoDB Conneted2: ${conn.connections.host}`)
+        console.log(`MongoDB Conneted: ${conn.connections.host}`)
     } catch (error){
         console.log(error)
         process.exit(1)

@@ -1,5 +1,5 @@
 module.exports = {
   getIndex: (req, res) => {
-    res.render("WellsFargoSmtParser.ejs");
+    res.render("profile.ejs");
   },
 };
