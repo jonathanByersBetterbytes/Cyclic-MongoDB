@@ -1,0 +1,188 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Data Aggregator</title>
+		<link
+		  rel="icon"
+		  type="image/jpg"
+		  sizes="32x32"
+		  href="images/Strawser_Byers_Logo.jpg"
+		/>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<script lang="javascript" src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper" class="fade-in">
+
+				<!-- Intro -->
+					<div id="intro">
+						<h1>Hello, This Is <br />
+							Data Aggregator</h1>
+						<p>A Tool For Compiling Data From Multiple Sources.</p>
+						<ul class="actions">
+							<li><a href="#header" class="button icon solid solo fa-arrow-down scrolly">Continue</a></li>
+						</ul>
+					</div>
+
+				<!-- Header -->
+					<header id="header">
+						<a href="index.html" class="logo">Data Aggregator</a>
+					</header>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul class="links">
+							<li class="active"><a href="index.html">This is Data Aggregator</a></li>
+							<!-- 
+							<li><a href="generic.html">Generic Page</a></li>
+							<li><a href="elements.html">Elements Reference</a></li> 
+							-->
+						</ul>
+						<ul class="icons">
+							<li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
+							<li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
+							<li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
+							<li><a href="#" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Featured Post -->
+							<article class="post featured">
+								<header class="major">
+									<span class="date">PDF Parser</span>
+									<h2><a href="#">Statement Upload</a></h2>
+									<input type="file" id="input_dom_element">
+									<!-- <div id="drop_dom_element">Drop files here</div> -->
+									<ul class="actions special">
+										<li><a href="#" class="button large">Output Results</a></li>
+									</ul>
+									<div style="font-size:10px;" id="my_file_output"></div>								
+								</header>
+							</article>
+					</div>
+
+
+<script>	
+	async function handleFileAsync(e) {
+		const file = e.target.files[0];		
+		const data = await file.arrayBuffer();
+		/* data is an ArrayBuffer */
+		const workbook = XLSX.read(data);
+		const worksheet = workbook.Sheets['Sheet1']
+		let jsonStmt = XLSX.utils.sheet_to_json(worksheet)		
+		/* DO SOMETHING WITH workbook HERE */
+		// let chopIndxForAccnt = jsonStmt.findIndex(elm => elm['Date'].indexOf('Ending balance') != -1);
+		// if(lastChopIndxForAccnt === -1) lastChopIndxForAccnt = jsonStmt.findIndex(elm => elm['1-800-521-6121'] === 'interest');
+		// jsonStmt = jsonStmt.splice(0,lastChopIndxForAccnt) // takes off the back filler to get just transactions
+		
+		let cleanedJSON = []
+		
+		console.log(jsonStmt)
+		for(elm in jsonStmt){
+			let lineItem = {}
+			lineItem['Date'] = jsonStmt[elm].Date+'/2023'
+			lineItem['Description'] = ''
+			// if it's a number next then it's a check #
+			if(isNaN(Number(jsonStmt[elm].Number))) lineItem['Description'] = jsonStmt[elm].Number
+			else lineItem['Check #'] = jsonStmt[elm].Number
+			
+			if(!isAmountValid(jsonStmt[elm].Description)){  // if it's not a number then it's a description
+				lineItem['Description'] += ' ' + jsonStmt[elm].Description
+				//jsonStmt[elm].Subtractions = jsonStmt[elm].Subtractions.trim()
+				if(jsonStmt[elm]['Additions'] && isAmountValid(jsonStmt[elm].Additions)){
+					lineItem['Amount'] = jsonStmt[elm].Additions
+					//console.log('Additions: ' + jsonStmt[elm]['Additions'])
+				} 
+				else if(jsonStmt[elm]['Subtractions'] && isAmountValid(jsonStmt[elm].Subtractions)){
+					lineItem['Amount'] = jsonStmt[elm].Subtractions
+				//console.log('Subtractions: ' + jsonStmt[elm]['Subtractions'])
+				} 
+				// not sure about Comenitycard Pay Check Pymt adding a 0005 to amount
+				// balance starts back up and description can be blank
+				if(!lineItem['Amount'] && jsonStmt[elm]['balance'] && isAmountValid(jsonStmt[elm].Subtractions)) lineItem['Amount'] = jsonStmt[elm].Subtractions
+				else if(!lineItem['Amount'] && jsonStmt[elm]['balance'] && isAmountValid(jsonStmt[elm].balance)) lineItem['Amount'] = jsonStmt[elm].balance
+				//11/16	Wire Trans Svc Charge - Sequence: 211116151347 Srf#	US01320Ku0610031 Trn#211116151347 Rfb#	W510847Dom211116	 	15.00
+				//console.log('Amount: ' + lineItem['Amount'])
+			}else lineItem['Amount'] = jsonStmt[elm].Description // if description is amount skip other cols
+			lineItem.Description = lineItem.Description.trim()
+			if(lineItem['Amount']) lineItem['Amount'] = isAmountValid(lineItem['Amount']) // make a number
+			if(lineItem.Description.indexOf('Accenture, LLP Payrll Dep') === -1
+				&& lineItem.Description.indexOf('Bill Pay Payment Return') === -1
+				&& lineItem.Description.indexOf('Online Transfer From Barringer') === -1
+				&& lineItem.Description.indexOf('Tele-Transfer Fr Checking') === -1
+				&& lineItem.Description.indexOf('Interest Payment') === -1
+				&& lineItem.Description.indexOf('Webrus33') === -1
+				&& lineItem.Description.indexOf('Edeposit IN Branch') === -1
+				&& lineItem.Description.indexOf('24Petwatch Petinsu') === -1
+				&& lineItem.Description.indexOf('Reverse Zelle to') === -1
+				&& lineItem.Description.indexOf('Overdraft Xfer From Credit') === -1
+				&& lineItem.Description.indexOf('Online Transfer From') === -1
+				&& lineItem.Description.indexOf('ACH Claim#') === -1
+				&& lineItem.Description.indexOf('Purchase Return authorized') === -1
+				&& lineItem.Description.indexOf('WT Fed#') === -1
+				&& lineItem.Description.indexOf('Deposit') === -1
+				&& lineItem.Description.indexOf('Zelle From') === -1
+				&& lineItem.Description.indexOf('Overdraft Xfer From Credit') === -1
+				&& lineItem.Description.indexOf('Deposit Made In A Branch/Store') === -1
+				|| lineItem.Description === 'Deposited OR Cashed Check'){
+				lineItem['Amount'] = -lineItem['Amount']  // make a debit
+			}//
+			cleanedJSON.push(lineItem)
+		}
+
+		console.log(cleanedJSON)
+		// generate worksheet and workbook 
+		const ws = XLSX.utils.json_to_sheet(cleanedJSON);
+		const wb = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(wb, ws, "Filtered");
+		for(let i=2;ws['C'+i];i++){
+			ws['A'+i].t = 'd';
+			//ws['C'+i].v = ws['C'+i].v.replaceAll('$','').replaceAll(',','');
+			ws['C'+i].t = 'n';
+			ws['C'+i].z = '"$"#,##0.00_);\\("$"#,##0.00\\)'
+			//console.log(ws['C'+i])
+		}
+		XLSX.writeFile(wb, "parsedTransactions.xlsx", { compression: true });
+	}
+	input_dom_element.addEventListener("change", handleFileAsync, false);
+
+	function isDateValid(dateStr) {
+	dateStr = dateStr.replaceAll('*','')
+	if(dateStr.length !== 8 || dateStr.indexOf('/') === -1) return false  // checking for rouge numbers in description that give false positive dates
+  	return !isNaN(new Date(dateStr)) ? dateStr : false;
+}
+function isAmountValid(amountStr) {
+	if(!amountStr || amountStr.trim() === '') return false
+	amountStr = amountStr.replaceAll(',','')
+	// could use:  || amountStr.length > 11 also
+	// {"Date": "3/3/2021",    "Number": "Payment for Amz Storecard 030121 xxxxx0635 N", "Description": "6045781133187665", "Additions": "546.34", "Subtractions": "21,931.38"}
+	if(amountStr.indexOf('.') === -1) return false  // checking for rouge numbers in description that give false positive 
+  	return !isNaN(Number(amountStr)) ? Number(amountStr) : false;
+}
+function scrubDescrption(desc){
+	//chop end of page text
+	if(desc.indexOf(' p. ') !== -1)  desc = desc.substring(0,desc.indexOf(' p. '))
+	desc = desc.trim()
+	if(desc.indexOf('00000000 LODGING') != -1 && 10 > desc.indexOf('00000000 LODGING')) return false  // hotel stays have multiple dates, skip them
+	desc = desc.replaceAll('To: Carrier: Class: ', '')
+	desc = desc.replaceAll('HARTSFIELD', 'HARTSFIELD To:')
+	
+	// flag for skip line
+	if(desc.indexOf('Ending Account') === -1 
+		&& desc.indexOf('undefined') === -1 
+			&& desc.indexOf('Account Ending') === -1) 
+				return desc
+}
+
+	</script>
+
+	</body>
+</html>
