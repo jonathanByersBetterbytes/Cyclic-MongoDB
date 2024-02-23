@@ -19,7 +19,7 @@ const connectDB = async () => {
 }
 
 app.get('/', (req, res) => { // homepage
-    res.send({title: 'Books'})
+    res.send({title: 'Books2'})
 })
 app.get('/add-note', async (req,res) => {
     try{
@@ -46,6 +46,7 @@ app.get('/books', async (req,res)=>{
         // console.log(books)
     }else res.send('Something went wrong.')
 })
+
 
 connectDB().then(()=> {
     app.listen(PORT, () => {
