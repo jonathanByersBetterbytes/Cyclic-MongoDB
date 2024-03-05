@@ -1,0 +1,172 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>DATA AGGREGATOR by BetterBytes</title>
+		<link
+		  rel="icon"
+		  type="image/jpg"
+		  sizes="32x32"
+		  href="imgs/Strawser_Byers_Logo.jpg"
+		/>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="/assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="/assets/css/noscript.css" /></noscript>
+	</head>
+<body class="is-preload">
+
+	<!-- Wrapper -->
+		<div id="wrapper" class="fade-in">
+
+	<!-- Intro -->
+	<div id="intro">
+		<h1>Hello, this is<br />
+			DATA AGGREGATOR</h1>
+			<p>A Tool For Compiling Data From Multiple Sources <br />
+				and Displaying in Meaningful Format.</p>
+		<ul class="actions">
+			<li><a href="#header" class="button icon solid solo fa-arrow-down scrolly">Continue</a></li>
+		</ul>
+	</div>
+
+				<!-- Header -->
+					<header id="header">
+						<a href="index.html" class="logo">DATA AGGREGATOR</a>
+					</header>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul class="links">
+							<li class="active"><a href="index.html">PDF Statements to Excel</a></li>
+							<li class=""><a href="index.html">PDF Statements to Raw Text</a></li>
+							<li class=""><a href="index.html">PDF Statements to CSV</a></li>
+							<!-- 
+							<li><a href="generic.html">Generic Page</a></li>
+							<li><a href="elements.html">Elements Reference</a></li> 
+							-->
+						</ul>
+						<ul class="icons">
+							<li><a href="https://twitter.com/jonathankbyers" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
+							<li><a href="https://www.linkedin.com/in/jonathankbyers" class="icon brands fa-linkedin"><span class="label">LinkedIn</span></a></li>
+							<li><a href="https://www.facebook.com/jonathan.k.byers" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
+							<li><a href="https://www.instagram.com/jonathankbyers/" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
+							<li><a href="https://github.com/jonathanByersBetterbytes/" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
+						</ul>
+					</nav>
+
+				
+				<!-- Main -->
+				<div id="main">
+
+					<!-- Featured Post -->
+						<article class="post featured">
+							<header class="major">
+								<span class="date">PDF Parser</span>
+								<h2><a href="#">Statement Upload</a></h2>
+							</header>
+			<form action="/post/parsePDFs" enctype="multipart/form-data" method="POST">
+				<div class="mb-3" align="center">
+					<label for="formatSelector" class="form-label">Select the Statement Format:</label>
+					<select id="formatSelector" style="width: fit-content;">
+						<option value="wellsfargoChecking" selected="selected">
+							Wells Fargo Checking
+						</option>
+						<option value="amexBusCredit">
+							Amex Business Credit
+						</option>
+			        </select>
+					<br/>
+					<label for="statementsUpload" class="form-label">Upload Multiple PDFs Here:</label>
+					<input type="file" class="form-control" id="statementsUpload" name="files[]" multiple accept=".pdf,.xlsx,.xls,.csv"/>
+				</div>
+				<button type="submit" class="btn btn-primary" value="Upload">Submit</button>
+			</form>
+						<!-- <div id=""><input type="file" id="input_dom_element"></div> -->
+							
+						<% if(parsedTextOutput.length>0){ %>
+							<ul class="actions special">
+								<li><a href="parsedTransactions.xlsx" class="button large" style=" background-color: rgb(164, 164, 215); " id="Parsed Output">File Saved in Your Downloads</a></li>
+							</ul>
+						<% } %>
+							<table id='myTable'>
+								<thead>
+									<tr>
+										<th>Date</th>
+										<th>Description</th>
+										<th>Amount</th>
+										<th>Check#</th>
+									</tr>
+								</thead>
+								<tbody>
+				<% for(let i=0;i<parsedTextOutput.length;i++){ %>
+					<tr>
+						<td><%= parsedTextOutput[i].Date %></td>
+						<td><%= parsedTextOutput[i].Description %></td>
+						<td><%= parsedTextOutput[i].Amount %></td>
+						<td><%= parsedTextOutput[i]['Check#'] %></td>
+					</tr> 
+				<% } %>
+
+								</tbody>
+							</table>
+							
+							<div id="results"></div>
+						</article>
+				</div>
+
+
+			<!-- Copyright  -->
+				<div id="copyright">
+					<ul><li>&copy;<a href="https://betterbytes.netlify.app/">BetterBytes</a></li></ul>
+				</div>
+
+			</div>
+
+<!-- Scripts -->
+	<script src="/assets/js/jquery.min.js"></script>
+	<script src="/assets/js/jquery.scrollex.min.js"></script>
+	<script src="/assets/js/jquery.scrolly.min.js"></script>
+	<script src="/assets/js/browser.min.js"></script>
+	<script src="/assets/js/breakpoints.min.js"></script>
+	<script src="/assets/js/util.js"></script>
+	<script src="/assets/js/main.js"></script>
+	<script lang="javascript" src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+	
+	<script>
+		// input_dom_element.addEventListener("change", handleFileAsync, false);
+		<% if(parsedTextOutput.length > 0){ %>
+			const tableBody = document.querySelector('#myTable tbody')
+			let row, dateCell, desCell, amountCell, checkNumCell
+			let jsonTrans = [], newTransLn = {}
+			<% for(let i=0;i<parsedTextOutput.length;i++){ %> // disabled
+				newTransLn = {}
+				newTransLn['Date'] = '<%= parsedTextOutput[i].Date %>'
+				newTransLn['Description'] = '<%= parsedTextOutput[i].Description %>'
+				newTransLn['Amount'] = <%= parsedTextOutput[i].Amount %>
+				newTransLn['Check#'] = '<%= parsedTextOutput[i]['Check#'] %>'
+				jsonTrans.push(newTransLn)
+				//console.log(newTransLn)
+			<% } %>
+			
+			// generate worksheet and workbook 
+			const ws = XLSX.utils.json_to_sheet(jsonTrans);
+			const wb = XLSX.utils.book_new();		
+			XLSX.utils.book_append_sheet(wb, ws, "Filtered");
+			
+			ws["!cols"] = [] /* create column metadata object */
+			ws["!cols"][0] = { width: 10 } 
+			ws["!cols"][1] = { width: 70 } 
+			ws["!cols"][2] = { width: 15 } 
+			
+			for(let i=2;ws['C'+i];i++){
+				ws['A'+i].t = 'd';
+				ws['C'+i].t = 'n';
+				ws['C'+i].z = '"$"#,##0.00_);\\("$"#,##0.00\\)'
+			}
+			XLSX.writeFile(wb, "parsedTransactions.xlsx", { compression: true, cellStyles: true });
+		<% } %>
+		
+		
+	</script> 
+	</body>
+</html>
