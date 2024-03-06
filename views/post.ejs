@@ -10,7 +10,14 @@
           action="/post/likePost/<%= post.id %>?_method=PUT"
           method="POST"
         >
-          <button class="btn btn-primary fa fa-heart" type="submit"></button>
+        <button class="btn btn-primary fa fa-heart" type="submit"></button>
+        </form>
+        <form
+          class="col-1"
+          action="/post/completedPost/<%= post.id %>?_method=PUT"
+          method="POST"
+        >
+        <button class="btn btn-primary fa fa-caution"  type="submit"><%= post.completedName ? 'Completed by '+post.completedName : 'Unclaimed' %></button>
         </form>
         <h3 class="col-3">Likes: <%= post.likes %></h3>
         <%if(post.user == user.id){ %>
@@ -30,7 +37,7 @@
 
     <div class="col-6 mt-5">
       <a class="btn btn-primary" href="/profile">Return to Profile</a>
-      <a class="btn btn-primary" href="/feed">Return to Feed</a>
+      <a class="btn btn-primary" href="/feed">Return to Posts</a>
     </div>
   </div>
 </div>

@@ -4,6 +4,7 @@ const XLSX = require('xlsx')
 let fs = require('fs'), PDFParser = require("pdf2json");
 let pdfParser = new PDFParser(this, 1);
 const session = require('express-session')
+const mongoose = require("mongoose");
 
 const Post = require("../models/Post");
 
@@ -308,6 +309,20 @@ module.exports = {
       });
       console.log("Post has been added!");
       res.redirect("/profile");
+    } catch (err) {
+      console.log(err);
+    }
+  },
+  completedPost: async (req, res) => {
+    try {
+      await Post.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          completedName: req.user.userName
+        }
+      );
+      console.log("Post marked complete by "+req.user.name);
+      res.redirect(`/post/${req.params.id}`);
     } catch (err) {
       console.log(err);
     }
