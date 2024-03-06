@@ -1,13 +1,8 @@
+<%- include('partials/header') -%>
 <!DOCTYPE HTML>
 <html>
 	<head>
 		<title>DATA AGGREGATOR by BetterBytes</title>
-		<link
-		  rel="icon"
-		  type="image/jpg"
-		  sizes="32x32"
-		  href="imgs/Strawser_Byers_Logo.jpg"
-		/>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="/assets/css/main.css" />
@@ -18,16 +13,16 @@
 	<!-- Wrapper -->
 		<div id="wrapper" class="fade-in">
 
-	<!-- Intro -->
-	<div id="intro">
-		<h1>Hello, this is<br />
-			DATA AGGREGATOR</h1>
-			<p>A Tool For Compiling Data From Multiple Sources <br />
-				and Displaying in Meaningful Format.</p>
-		<ul class="actions">
-			<li><a href="#header" class="button icon solid solo fa-arrow-down scrolly">Continue</a></li>
-		</ul>
-	</div>
+			<!-- Intro -->
+			<div id="intro">
+				<h1>Hello, this is<br />
+					DATA AGGREGATOR</h1>
+					<p>A Tool For Compiling Data From Multiple Sources <br />
+						and Displaying it in a Meaningful Format.</p> 
+				<ul class="actions">
+					<li><a href="#header" class="button icon solid solo fa-arrow-down scrolly">Continue</a></li>
+				</ul>
+			</div>
 
 				<!-- Header -->
 					<header id="header">
@@ -85,7 +80,7 @@
 							
 						<% if(parsedTextOutput.length>0){ %>
 							<ul class="actions special">
-								<li><a href="parsedTransactions.xlsx" class="button large" style=" background-color: rgb(164, 164, 215); " id="Parsed Output">File Saved in Your Downloads</a></li>
+								<li><a href="#" class="button large" style=" background-color: rgb(164, 164, 215); " id="Parsed Output">File Saved in Your Downloads</a></li>
 							</ul>
 						<% } %>
 							<table id='myTable'>
@@ -111,15 +106,11 @@
 							</table>
 							
 							<div id="results"></div>
+							<div class="text-center">
+							  <a class="btn btn-primary" href="/profile">Return to Feed</a>
+							</div>  
 						</article>
 				</div>
-
-
-			<!-- Copyright  -->
-				<div id="copyright">
-					<ul><li>&copy;<a href="https://betterbytes.netlify.app/">BetterBytes</a></li></ul>
-				</div>
-
 			</div>
 
 <!-- Scripts -->
@@ -168,5 +159,6 @@
 		
 		
 	</script> 
+<%- include('partials/footer') -%>
 	</body>
 </html>
