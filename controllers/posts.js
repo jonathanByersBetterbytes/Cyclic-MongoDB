@@ -162,6 +162,20 @@ module.exports = {
       console.log(err);
     }
   },
+  uncompletedPost: async (req, res) => {
+    try {
+      await Post.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          completedName: ''
+        }
+      );
+      console.log("Post marked complete by "+req.user.name);
+      res.redirect(`/post/${req.params.id}`);
+    } catch (err) {
+      console.log(err);
+    }
+  },
   likePost: async (req, res) => {
     try {
       await Post.findOneAndUpdate(
@@ -177,11 +191,14 @@ module.exports = {
     }
   },
   deletePost: async (req, res) => {
+    console.log("Deleting Post");
     try {
       // Find post by id
       let post = await Post.findById({ _id: req.params.id });
-      // Delete image from cloudinary
-      await cloudinary.uploader.destroy(post.cloudinaryId);
+      if(post.cloudinaryId){
+        // Delete image from cloudinary
+        await cloudinary.uploader.destroy(post.cloudinaryId);
+      }
       // Delete post from db
       await Post.remove({ _id: req.params.id });
       console.log("Deleted Post");
