@@ -34,8 +34,100 @@ module.exports = {
       console.log(err);
     }
   },
-  getTesting: async (req, res) => {
-    
+  getFeed: async (req, res) => {
+    try {
+      //get all posts in desc order by createdAt
+      const posts = await Post.find().sort({ createdAt: "desc" }).lean()
+      res.render("feed.ejs", { posts: posts });
+    } catch (err) {
+      console.log(err);
+    }
+  },
+  createPost: async (req, res) => {
+    try {
+      // Upload image to cloudinary
+      let result = {}
+      if(req.file){ // is file?
+        result = await cloudinary.uploader.upload(req.file.path);
+      }else{
+        result.secure_url = ''
+        result.public_id = ''
+      }
+
+      //media is stored on cloudainary - the above request responds with url to media and the media id that you will need when deleting content 
+      await Post.create({
+        title: req.body.title,
+        image: result.secure_url,
+        cloudinaryId: result.public_id,
+        caption: req.body.caption,
+        likes: 0,
+        user: req.user.id,
+      });
+      console.log("Post has been added!");
+      res.redirect("/profile");
+    } catch (err) {
+      console.log(err);
+    }
+  },
+  completedPost: async (req, res) => {
+    try {
+      await Post.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          completedName: req.user.userName
+        }
+      );
+      console.log("Post marked complete by "+req.user.name);
+      res.redirect(`/post/${req.params.id}`);
+    } catch (err) {
+      console.log(err);
+    }
+  },
+  uncompletedPost: async (req, res) => {
+    console.log("Post marked uncomplete by "+req.user.name);
+    try {
+      await Post.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          completedName: ''
+        }
+      );
+      console.log("Post marked uncomplete by "+req.user.name);
+      res.redirect(`/post/${req.params.id}`);
+    } catch (err) {
+      console.log(err);
+    }
+  },
+  likePost: async (req, res) => {
+    try {
+      await Post.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          $inc: { likes: 1 },
+        }
+      );
+      console.log("Likes +1");
+      res.redirect(`/post/${req.params.id}`);
+    } catch (err) {
+      console.log(err);
+    }
+  },
+  deletePost: async (req, res) => {
+    console.log("Deleting Post");
+    try {
+      // Find post by id
+      let post = await Post.findById({ _id: req.params.id });
+      if(post.cloudinaryId){
+        // Delete image from cloudinary
+        await cloudinary.uploader.destroy(post.cloudinaryId);
+      }
+      // Delete post from db
+      await Post.remove({ _id: req.params.id });
+      console.log("Deleted Post");
+      res.redirect("/profile");
+    } catch (err) {
+      res.redirect("/profile");
+    }
   },
   parsePDFs: async (req, res) => {
     let cnt = 0, excelJSON = [] 
@@ -100,111 +192,4 @@ module.exports = {
     console.log('Starting ')
     loadPDF(req.files[cnt]) // recursion 
   }, 
-
-  getPost: async (req, res) => {
-    try {
-      //id parameter comes from the post routes
-      //router.get("/:id", ensureAuth, postsController.getPost);
-      //http://localhost:3000/post/631a7f59a3e56acfc7da286f
-      //id === 631a7f59a3e56acfc7da286f
-      const post = await Post.findById(req.params.id);
-      res.render("post.ejs", { post: post, user: req.user});
-    } catch (err) {
-      console.log(err);
-    }
-  },
-  getFeed: async (req, res) => {
-    try {
-      //get all posts in desc order by createdAt
-      const posts = await Post.find().sort({ createdAt: "desc" }).lean()
-      res.render("feed.ejs", { posts: posts });
-    } catch (err) {
-      console.log(err);
-    }
-  },
-  createPost: async (req, res) => {
-    try {
-      // Upload image to cloudinary
-      const result = {}
-      if(req.file){ // is file?
-        result = await cloudinary.uploader.upload(req.file.path);
-      }else{
-        result.secure_url = ''
-        result.public_id = ''
-      }
-
-      //media is stored on cloudainary - the above request responds with url to media and the media id that you will need when deleting content 
-      await Post.create({
-        title: req.body.title,
-        image: result.secure_url,
-        cloudinaryId: result.public_id,
-        caption: req.body.caption,
-        likes: 0,
-        user: req.user.id,
-      });
-      console.log("Post has been added!");
-      res.redirect("/profile");
-    } catch (err) {
-      console.log(err);
-    }
-  },
-  completedPost: async (req, res) => {
-    try {
-      await Post.findOneAndUpdate(
-        { _id: req.params.id },
-        {
-          completedName: req.user.userName
-        }
-      );
-      console.log("Post marked complete by "+req.user.name);
-      res.redirect(`/post/${req.params.id}`);
-    } catch (err) {
-      console.log(err);
-    }
-  },
-  uncompletedPost: async (req, res) => {
-    try {
-      await Post.findOneAndUpdate(
-        { _id: req.params.id },
-        {
-          completedName: ''
-        }
-      );
-      console.log("Post marked complete by "+req.user.name);
-      res.redirect(`/post/${req.params.id}`);
-    } catch (err) {
-      console.log(err);
-    }
-  },
-  likePost: async (req, res) => {
-    try {
-      await Post.findOneAndUpdate(
-        { _id: req.params.id },
-        {
-          $inc: { likes: 1 },
-        }
-      );
-      console.log("Likes +1");
-      res.redirect(`/post/${req.params.id}`);
-    } catch (err) {
-      console.log(err);
-    }
-  },
-  deletePost: async (req, res) => {
-    console.log("Deleting Post");
-    try {
-      // Find post by id
-      let post = await Post.findById({ _id: req.params.id });
-      if(post.cloudinaryId){
-        // Delete image from cloudinary
-        await cloudinary.uploader.destroy(post.cloudinaryId);
-      }
-      // Delete post from db
-      await Post.remove({ _id: req.params.id });
-      console.log("Deleted Post");
-      res.redirect("/profile");
-    } catch (err) {
-      res.redirect("/profile");
-    }
-  },
 };
